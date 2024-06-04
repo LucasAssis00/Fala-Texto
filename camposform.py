@@ -33,6 +33,7 @@ import os
 directory = os.getcwd()
 wav_files = []
 
+#Mostrar arquivos .wav da pasta
 for file_path in os.listdir(directory):
     # check if current file_path is a file
     if file_path.endswith('.wav'):
@@ -48,6 +49,7 @@ for index, value in enumerate(wav_files):
 i = input('Escolha o indice do arquivo de áudio que você deseja: ')
 
 text5 = transcricao(wav_files[int(i)])
+#Coloca tudo em maiúsculo, remove pontos e virgulas
 #
 text5 = text5.upper()
 text5 = text5.replace(".", "")
@@ -55,6 +57,7 @@ text5 = text5.replace(",", "")
 #
 print(text5)
 
+#Cria-se os campos e procura na string pra ir separando, isso é feito do último campo para o primeiro
 hobby = ""
 ocupacao = ""
 matricula = ""
