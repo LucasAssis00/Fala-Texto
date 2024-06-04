@@ -1,3 +1,4 @@
+#dicionário para armazenamento de números por extenso para conversão em cardinais (no nosso contexto não se faz necessária uso de valores com três ou mais casas decimais, por isso o comentário nos últimos elementos)
 br_number_system = {
     'zero': 0,
     'um': 1,
@@ -48,7 +49,7 @@ input: list of strings
 return value: integer
 """
 
-
+#cálculo da soma do valor real pela combinação dos numeros por extenso
 def number_formation(number_words):
     numbers = []
     for number_word in number_words:
@@ -70,6 +71,7 @@ function to return integer for an input `number_sentence` string
 input: string
 output: int or double or None
 """
+#A partir do dicionario no começo do código, faz-se o cálculo do real valor informado
 def word_to_num(number_sentence):
     if type(number_sentence) is not str:
         raise ValueError("Type of input is not string! Please enter a valid number word (eg. \'two million twenty three thousand and forty nine\')")
@@ -157,7 +159,7 @@ def word_to_num(number_sentence):
 
     return total_sum
 
-
+#função para chamar o editor de texto para correções necessárias
 def edit_text_in_terminal(text):
     # Save the text to a temporary file
     with open("temp_text.txt", "w") as temp_file:
@@ -180,7 +182,7 @@ def edit_text_in_terminal(text):
 
 
 
-
+#chamada do modelo whisper para transcrição
 import whisper
 model = whisper.load_model("small")
 
@@ -192,6 +194,7 @@ def transcricao(arquivo):
 	return texto
 '''
 
+#Função para realizar a transcrição do arquivo, necessariamente em português, cuidando de alguns contratempos que encontrei no desenvolvimento, como virgulas e/ou pontos em locais errados e letras maiusculoas/minusculas
 def transcricao(arquivo):
 	result = model.transcribe(arquivo, language = 'Portuguese')
 	texto = result["text"].upper()
@@ -201,15 +204,17 @@ def transcricao(arquivo):
 #texto = texto.replace(".", "")
 #texto = texto.upper()
 
+#biblioteca para manipulação de arquivos csv, no qual nesse projeto são armazenadas as variaveis referentes aos procedimentos e seus respectivos custos
 import pandas as pd
 
 df = pd.read_csv('tabela_consulta2.csv', sep=',')
-
+#deixa os valores para leitura no formato de numeros cardinais, para sua manipulação
 df['Valor'] = df['Valor'].replace(',','',regex=True)
 df['Valor'] = df['Valor'].replace('\.','',regex=True)
 df['Valor'] = df['Valor'].str.extract('(\d+)', expand=False)
 
 
+#ao apagar a virgula, divide o numero float para retorná-lo como o valor com centavos
 #for i in df['Valor']:
 #  i.replace(".","")
 df['Valor'] = df['Valor'].astype(float)/100
@@ -222,6 +227,7 @@ import os
 directory = os.getcwd()
 wav_files = []
 
+#verifica todos os arquivos .wav para o usuário. mostrando-os na tela para escolha dele
 for file_path in os.listdir(directory):
     # check if current file_path is a file
     if file_path.endswith('.wav'):
@@ -240,6 +246,7 @@ print()
 print()
 #text5 = model.transcribe("output.wav", language = 'Portuguese')
 
+#chamada de função para realizar a transcrição
 text5 = unidecode(transcricao(wav_files[int(i)]))
 #text5 = unidecode(transcricao("output.wav"))
 print('~')
@@ -254,25 +261,8 @@ sleep(1)
 #print(text5)
 
 
-''' 
-excluir=0
-teste = ""
 
-for word in text5:
-    try:
-        if word == 'e':
-          break
-        elif word_to_num(word):
-          break
-
-    except ValueError:
-      excluir+=1
-
-
-teste += " ".join(text5[excluir:])
-text5 = teste
-#print(text5)
-'''
+#Procedimentos separados utilizando a palavra "depois", em que são ditos N procedimentos e suas quantidades
 x = text5.split(" DEPOIS ")
 print(x)
 print('*')
@@ -280,11 +270,12 @@ sleep(1)
 for item in x:
   item = item.split()
 
-
+#Parte inicial representa o numero, seja em extenso ou cardinal.
 beginning_phrase = []
 remaining_phrase = []
 ordem = 0
 
+#Confere até a ultima palavra que não seja um numero ou um "e", para separar os procedimentos
 for item in x:
   item = item.split()
   print(item)
@@ -312,7 +303,7 @@ for item in x:
     except ValueError:
       break
 
-
+  #separação das frases representando o numero ou a descrição do procedimento
   beginning_phrase.append(" ".join(item[:excluir]))
   remaining_phrase.append(" ".join(item[excluir:]))
 
@@ -322,6 +313,7 @@ sleep(1)
 
 a=0
 for item in beginning_phrase:
+    #se não for detectado o primeiro numero, solicita-se que o responsáel edite a string de texto para torná-la compatível com a atividade atual
     if item == '':
         print('até aqui blz...')
         #print(f'Ocorreu um erro referente ao item "{x[a]}", reescreva-o corretamente:\n')
@@ -333,6 +325,7 @@ for item in beginning_phrase:
         valor = 0
         excluir = 0
 
+        #caso necessite alterar o texto, dividem-se as frases de procedimento e quantidades
         while i < len(correcao):
             #
             current_word = correcao[i]
@@ -344,6 +337,7 @@ for item in beginning_phrase:
             i += 1
 
             try:
+                #Para que palavras que não devem ser editadas no português ou inglês, prefere-se a manutenção de termos sobre numeros em pt-br) 
                 if correcao[i-1] == 'e':
                     pass
                 elif word_to_num(current_word):
@@ -375,6 +369,7 @@ sleep(1)
 a=0
 quantidade = []
 
+#capta os numeros das frases. Caso seja necessário ocorre a conversão de por extenso e carginais 
 for item in beginning_phrase:
   teste = word_to_num(item)
   print(teste)
@@ -385,7 +380,7 @@ for item in beginning_phrase:
 
 procedimento = []
 custo = []
-
+#verifica no arquivo .csv qual o procedimento mais similar à transcrição
 a=0
 for item in remaining_phrase:
   procedimento.append(process.extractOne(remaining_phrase[a], df.loc[:,'Descricao'], scorer=fuzz.ratio)[0])
@@ -394,6 +389,7 @@ for item in remaining_phrase:
 sleep(1)
 
 a=0
+#Caso o procedimento não corresponda ao desejado, é pedida uma alteração no texto referente à ele
 for item in remaining_phrase:
   
   #ajuste=input(f'''Verifique se a transcrição corresponde ao item desejado:\n{procedimento[a]}\n
@@ -414,6 +410,8 @@ Caso sejam necessários ajustes, digite alguma coisa antes do "Enter".
   a += 1
 sleep(1)
 
+
+#Fazem as impressões dos arrays de quantidade de vezes que um procedimento foi realizado, qual foi cada procedimento e o custo deles
 print()
 print(quantidade)
 print()
@@ -427,6 +425,7 @@ print()
 for i in range(len(quantidade)):
     print(quantidade[i], '\t', custo[i], '\t\t', procedimento[i])
 somatudo=0
+#Faz a soma de todos os custos dos procedimentos
 for precos in custo:
     somatudo += float(precos)
 somatudo = '{:.2f}'.format(somatudo)
