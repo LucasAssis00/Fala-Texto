@@ -5,6 +5,7 @@ import threading
 import tkinter as tk
 from tkinter import messagebox
 
+#uso do módulo wave para criação da thread para gravação de áudios
 class AudioRecorderThread(threading.Thread):
     def __init__(self, filename, indicator_label):
         super(AudioRecorderThread, self).__init__()
@@ -43,6 +44,7 @@ i = 1
 #
 recorder = False
 #
+#botão para iniciar a gravação, com indicativos visuais caso haja já uma em andamento
 def start_recording():
     global recorder
     global filename
@@ -57,6 +59,7 @@ def start_recording():
         recorder = AudioRecorderThread(filename, indicator_label)
         recorder.start()
 
+#botão para parar a gravação, com indicativos visuais caso nçao houvesse uma em andamento
 def stop_recording():
     global recorder
     global filename
@@ -70,7 +73,7 @@ def stop_recording():
     else:
         messagebox.showinfo("Informativo", "Não havia gravação em andamento.")
 
-
+#botão para prosseguir a execução com o whisper no terminal
 def part2():
     if recorder:
         messagebox.showinfo("Informativo", "Já havia gravação em andamento.")
@@ -78,6 +81,7 @@ def part2():
         messagebox.showinfo("Informativo", "Prossiga a operação no terminal.")
         os.system('python3 continue.py')
 
+#Elementos para interface gráfica
 root = tk.Tk()
 root.title("Audio Recorder")
 root.geometry("300x150")
