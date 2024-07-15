@@ -14,7 +14,8 @@ model_size = "small"
 
 ##################
 
-model = WhisperModel(model_size, download_root="/media/assis/3fc2a7ec-618b-4235-a50a-636507205078/home/oltest3/Downloads/aaa")
+
+model = WhisperModel(model_size, download_root="/alterar/localizacao/pasta/no/dispositivo")
 
 #from unidecode import unidecode
 import os
