@@ -240,7 +240,7 @@ def start_recording():
     if recorder:
         messagebox.showinfo("Informativo", "Já havia gravação em andamento.")
     else:
-        indicator_label.config(text="Recording: ON", bg="red")  # Change indicator appearance
+        indicator_label.config(text="Gravação: ON", bg="red")  # Change indicator appearance
         recorder = AudioRecorderThread(None, indicator_label)
         recorder.start()
 
@@ -249,10 +249,10 @@ def stop_recording():
     if recorder:
         recorder.stop_recording()
         recorder.join()
-        indicator_label.config(text="Recording: OFF", bg="green")  # Change indicator appearance
+        indicator_label.config(text="Gravação: OFF", bg="green")  # Change indicator appearance
 
         # Prompt the user for a filename after recording
-        new_filename = simpledialog.askstring("Save As", "Enter the filename (without extension):")
+        new_filename = simpledialog.askstring("Salvar como", "Digite o nome do arquivo (sem a extensão):")
         if new_filename:
             new_filename = new_filename + ".wav"
             if os.path.exists(new_filename):
@@ -271,10 +271,10 @@ root = tk.Tk()
 root.title("Audio Recorder")
 root.geometry("300x150")
 
-start_button = tk.Button(root, text="Start Recording", command=start_recording)
-stop_button = tk.Button(root, text="Stop Recording", command=stop_recording)
+start_button = tk.Button(root, text="Começar Gravação", command=start_recording)
+stop_button = tk.Button(root, text="Parar Gravação", command=stop_recording)
 
-indicator_label = tk.Label(root, text="Recording: OFF", bg="green")
+indicator_label = tk.Label(root, text="Gravação: OFF", bg="green")
 
 start_button.pack()
 stop_button.pack()
