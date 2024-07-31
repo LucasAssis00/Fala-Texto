@@ -335,6 +335,7 @@ while True:
             except:
                 pass
             speak("Encerrando o assistente")
+            os.remove('teste.mp3')
             break
         case cmd if "EXCEL" in cmd:
             speak("Abrindo o Excel")
