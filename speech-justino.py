@@ -262,29 +262,42 @@ while True:
                     botao_register = driver.find_element("xpath", xpath_register)
                     botao_register.click()
             case cmd if "NOME" in cmd:
-                nome_user = (command.split("NOME", 1)[1]).strip()
                 search_box = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[1]/input')
-                search_box.send_keys(nome_user)
+                if "LIMPAR" in command:
+                    search_box.clear()
+                else:
+                    nome_user = (command.split("NOME", 1)[1]).strip()                
+                    search_box.send_keys(nome_user)
             case cmd if "SENHA" in cmd:
-                senha_user = (command.split("SENHA", 1)[1]).strip()
                 search_box = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[2]/input')
-                search_box.send_keys(senha_user)
+                if "LIMPAR" in command:
+                    search_box.clear()
+                else:
+                    senha_user = (command.split("SENHA", 1)[1]).strip()
+                    search_box.send_keys(senha_user)
             case cmd if "BEBIDA FAVORITA" in cmd:
-                if 'ÁGUA' in cmd:
-                    botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[4]")
-                    botao_bebida.click()
-                if 'LEITE' in cmd:
-                    botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[5]")
-                    botao_bebida.click()
-                if 'CAFÉ' in cmd:
-                    botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[6]")
-                    botao_bebida.click()
-                if 'VINHO' in cmd:
-                    botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[7]")
-                    botao_bebida.click()
-                if 'CHÁ' in cmd:
-                    botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[8]")
-                    botao_bebida.click()
+                if "LIMPAR" in command:
+                    for i in range(1,6):
+                        botao_bebida = driver.find_element("xpath", f"/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[{i}]")
+                        print(botao_bebida.get_attribute('value'))
+                        if botao_bebida.is_selected():
+                            botao_bebida.click()
+                else:
+                    if 'ÁGUA' in cmd:
+                        botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[4]")
+                        botao_bebida.click()
+                    if 'LEITE' in cmd:
+                        botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[5]")
+                        botao_bebida.click()
+                    if 'CAFÉ' in cmd:
+                        botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[6]")
+                        botao_bebida.click()
+                    if 'VINHO' in cmd:
+                        botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[7]")
+                        botao_bebida.click()
+                    if 'CHÁ' in cmd:
+                        botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[8]")
+                        botao_bebida.click()
             case cmd if "COR FAVORITA" in cmd:
                 if 'VERMELHO' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[6]")
@@ -317,16 +330,21 @@ while True:
                     botao_caixa = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/select/option[2]')
                 botao_caixa.click()
             case cmd if "E-MAIL" in cmd:
-                #cmd.replace("ARROBA", "@")
-                email_user = (command.split("E-MAIL", 1)[1]).strip()
-                email_user.replace("ARROBA", "@")
                 email_box = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[11]')
-                email_box.send_keys(email_user)
+                if "LIMPAR" in command:
+                    search_box.clear()
+                else:
+                    email_user = (command.split("E-MAIL", 1)[1]).strip()
+                    email_user = email_user.replace("ARROBA", "@")
+                    email_box.send_keys(email_user)
                 #email_box.send_keys(Keys.RETURN)
             case cmd if "MENSAGEM" in cmd:
-                input_message = (command.split("MENSAGEM", 1)[1]).strip()
                 message_box = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/textarea')
-                message_box.send_keys(input_message)
+                if "LIMPAR" in command:
+                    search_box.clear()
+                else:
+                    input_message = (command.split("MENSAGEM", 1)[1]).strip()
+                    message_box.send_keys(input_message)
             case cmd if "ENVIAR" in cmd:
                 botao_avanca = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/button')
                 botao_avanca.click()
