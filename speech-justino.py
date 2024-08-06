@@ -198,40 +198,53 @@ def listen():
 
 interrupcao = False
 
+start_time = time.time()
+speak("Olá. Eu sou o assistente de voz. ")
+'''
+speak("""Olá. Eu sou o assistente de voz. Fale o termo navegador para abrí-lo, 
+      preencher formulario para carregar a página web do formulário, 
+      cite o nome do campo antes de pronunciar a informação
+       ou depois da palavra  limpar para apagar algo já preenchido""")
+'''
 while True:
     command = listen().upper()  # string
     if "INTERROMPER GRAVAÇÃO" in command:
+        if interrupcao == False:
+            speak("Sistema em modo de espera")
         interrupcao = True
-    elif "CONTINUAR GRAVAÇÃO" in command:
+    elif "INICIAR GRAVAÇÃO" in command or "CONTINUAR GRAVAÇÃO" in command:
+        if interrupcao == True:
+            speak("Sistema identificando fala")
         interrupcao = False
 
     if interrupcao == False:
         match command:
             case cmd if "NAVEGADOR" in cmd:
                 print(cmd)
-                speak("Abrindo o navegador")
+                #speak("Abrindo o navegador")
                 driver = webdriver.Edge()
             case cmd if "NOVA ABA" in cmd:
-                speak("nova aba")
+                #speak("nova aba")
                 driver.switch_to.new_window('tab')
                 janelas_ativas = driver.window_handles
             case cmd if "MUDAR ABA" in cmd:
-                speak("mudando de aba")
+                #speak("mudando de aba")
                 #driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + Keys.TAB)
                 #driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.TAB)
                 janela_atual = driver.current_window_handle
                 indice_atual = janelas_ativas.index(janela_atual)
                 driver.switch_to.window(janelas_ativas[indice_atual - 1])
             case cmd if "NOVA JANELA" in cmd:
-                speak("nova janela")
+                #speak("nova janela")
                 driver.switch_to.new_window('window')
                 janelas_ativas = driver.window_handles
             case cmd if "GOOGLE" in cmd:
                 speak("google")
                 driver.get("http://www.google.com")
                 janelas_ativas = driver.window_handles
+                '''
             case cmd if "YOUTUBE" in cmd:
-                speak("youtube")
+                #speak("youtube")
                 driver.get("http://www.youtube.com")
                 janelas_ativas = driver.window_handles
             case cmd if "INSTAGRAM" in cmd:
@@ -242,10 +255,13 @@ while True:
                 speak("abrindo Facebook")
                 driver.get("https://www.facebook.com/")
                 janelas_ativas = driver.window_handles
+                '''
             case cmd if "FORMULÁRIO TESTE" in cmd:
                 speak("abrindo practice-automation")
                 driver.get("https://practice-automation.com/form-fields/")
                 janelas_ativas = driver.window_handles
+                '''
+            #vinculado ao youtube/facebook. Desnecessário para essa parte, mas demostra como dar múltiplos cliques para chegar em um ponto
             case cmd if "CRIAR CONTA" in cmd:
                 if 'youtube' in driver.current_url:
                     xpath_register1 = '/html/body/ytd-app/div[1]/div/ytd-masthead/div[4]/div[3]/div[2]/ytd-button-renderer/yt-button-shape/a/yt-touch-feedback-shape/div/div[2]'
@@ -261,6 +277,7 @@ while True:
                     xpath_register = '/html/body/div[1]/div[1]/div[1]/div/div/div/div[2]/div/div[1]/form/div[5]/a'
                     botao_register = driver.find_element("xpath", xpath_register)
                     botao_register.click()
+                '''
             case cmd if "NOME" in cmd:
                 search_box = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[1]/input')
                 if "LIMPAR" in command:
@@ -299,6 +316,7 @@ while True:
                         botao_bebida = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[8]")
                         botao_bebida.click()
             case cmd if "COR FAVORITA" in cmd:
+                #pelo menos por hora não sei como/ tá dando pra limpar esse campo. Depois que seleciona um aí fudeu
                 if 'VERMELHO' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[6]")
                     #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[10]")
@@ -353,10 +371,10 @@ while True:
             case cmd if "SAIR" in cmd:
                 print(janelas_ativas)
                 driver.quit()
-                speak("Fechando o navegador")
+                #speak("Fechando o navegador")
             case cmd if "PESQUISAR" in cmd:
                 texto_pesquisa = (command.split("PESQUISAR", 1)[1])
-                speak("Pesquisando" + texto_pesquisa)
+                #speak("Pesquisando" + texto_pesquisa)
                 if 'youtube' in driver.current_url:
                     search_box = driver.find_element("xpath", '/html/body/ytd-app/div[1]/div/ytd-masthead/div[4]/div[2]/ytd-searchbox/form/div[1]/div[1]/input')
                 if 'google' in driver.current_url:
@@ -364,6 +382,7 @@ while True:
                 time.sleep(1)
                 search_box.send_keys(texto_pesquisa)
                 search_box.send_keys(Keys.RETURN)
+                '''
             case cmd if "ABRIR VÍDEO" in cmd:
                 numero_video_extenso = (command.split("ABRIR VÍDEO", 1)[1])
                 numero_video_extenso = numero_video_extenso.strip()
@@ -372,14 +391,20 @@ while True:
                 xpath_video = f'/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[{numero_video}]/div[1]/div/div[1]/div/h3/a/yt-formatted-string'
                 link_video = driver.find_element("xpath", xpath_video)
                 link_video.click()
+                '''
             case cmd if "ENCERRAR" in cmd:
                 try:
                     driver.quit()
                 except:
                     pass
-                speak("Encerrando o assistente")
+                speak("Até a próxima.")
                 break
+                '''
             case cmd if "EXCEL" in cmd:
                 speak("Abrindo o Excel")
+                '''
     else:
         pass
+
+
+print("--- %s seconds ---" % (time.time() - start_time))
