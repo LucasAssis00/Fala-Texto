@@ -76,25 +76,18 @@ while True:
         match command:
             case cmd if "NAVEGADOR" in cmd:
                 print(cmd)
-                #speak("Abrindo o navegador")
                 driver = webdriver.Edge()
             case cmd if "NOVA ABA" in cmd:
-                #speak("nova aba")
                 driver.switch_to.new_window('tab')
                 janelas_ativas = driver.window_handles
             case cmd if "MUDAR ABA" in cmd:
-                #speak("mudando de aba")
-                #driver.find_element(By.TAG_NAME, "body").send_keys(Keys.CONTROL + Keys.TAB)
-                #driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.TAB)
                 janela_atual = driver.current_window_handle
                 indice_atual = janelas_ativas.index(janela_atual)
                 driver.switch_to.window(janelas_ativas[indice_atual - 1])
             case cmd if "NOVA JANELA" in cmd:
-                #speak("nova janela")
                 driver.switch_to.new_window('window')
                 janelas_ativas = driver.window_handles
             case cmd if "GOOGLE" in cmd:
-                speak("google")
                 driver.get("http://www.google.com")
                 janelas_ativas = driver.window_handles
             case cmd if "FORMULÁRIO TESTE" in cmd:
@@ -142,23 +135,18 @@ while True:
                 #pelo menos por hora não sei como/ tá dando pra limpar esse campo. Depois que seleciona um aí fudeu
                 if 'VERMELHO' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[6]")
-                    #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[10]")
                     botao_cor.click()
                 if 'AZUL' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[7]")
-                    #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[11]")
                     botao_cor.click()
                 if 'AMARELO' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[8]")
-                    #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[12]")
                     botao_cor.click()
                 if 'VERDE' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[9]")
-                    #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[13]")
                     botao_cor.click()
                 if 'ROSA' in cmd:
                     botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/input[10]")
-                    #botao_cor = driver.find_element("xpath", "/html/body/div[1]/div[2]/div/div/main/div/article/div/form/label[14]")
                     botao_cor.click()
             case cmd if "GOSTO" in cmd:
                 botao_caixa = driver.find_element("xpath", '/html/body/div[1]/div[2]/div/div/main/div/article/div/form/select')
