@@ -86,9 +86,6 @@ associacoes = {
 
 
 stringEntrada = ""
-indice=1
-while os.path.exists(f'registroOVO{indice}.csv'):
-    indice+=1
 
 
 
@@ -135,3 +132,35 @@ while stringEntrada != "SAIR":
     print("Comentários", associacoes["Comentários"])
     print()
     print()
+
+
+
+
+indice=1
+while os.path.exists(f'registroOVO{indice}.csv'):
+    indice+=1
+
+
+
+with open(f'registroOVO{indice}.csv', mode='w', newline='') as arquivo_csv:
+    #print("oi")
+    escritor_csv = csv.writer(arquivo_csv)
+
+    for campo in keywords:
+        valor = associacoes.get(campo) #busca o valor no dicionario
+
+        if valor is not None:
+            '''
+            #se for uma lista, converte em string
+            if isinstance(valor, list):
+                valor = ', '.join(map(str, valor))
+            '''
+            if isinstance(valor, list):
+                escritor_csv.writerow([campo] + valor)
+            elif isinstance(valor, str):
+                escritor_csv.writerow([campo, valor])
+        else:
+            #valor = "N/A" #caso o valor não seja encontrado, pode inserir um valor padrão
+            escritor_csv.writerow([campo, 'N/A'])
+
+        #escritor_csv.writerow([campo, valor])
