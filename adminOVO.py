@@ -24,7 +24,7 @@ keywords = ["Nome do paciente", "Data", "Horário", "Concentração", "Dose ofer
 
 
 # Inicializa o reconhecedor de voz e o sintetizador de voz
-recognizer = sr.Recognizer()
+#recognizer = sr.Recognizer()
 engine = pyttsx3.init()
 
 
@@ -46,6 +46,13 @@ def speak(text):
 # Função para reconhecimento de voz
 def reconhecer_comando():
     recognizer = sr.Recognizer()
+    """O parâmetro pause_threshold define a quantidade de silêncio que o algoritmo de reconhecimento de fala
+    deve considerar antes de parar de escutar. Reduzir esse valor pode acelerar a detecção de fim de fala."""
+    recognizer.pause_threshold = 0.8  # O valor padrão é 0.8, reduza para um valor menor
+    """non_speaking_duration: Define a duração do silêncio necessário antes de começar a escutar.
+    Diminuir esse valor pode iniciar a captação mais rapidamente."""
+    recognizer.non_speaking_duration = 0.5  # O valor padrão é 0.5
+
     with sr.Microphone() as source:
         stringEntrada = ""
         #while stringEntrada.upper() != "SAIR":
@@ -55,7 +62,9 @@ def reconhecer_comando():
                 root.destroy()
                 #break
             print("Aguardando comando...")
-            audio = recognizer.listen(source)
+            """                                         phrase_time_limit: Limita o tempo máximo que a biblioteca irá ouvir,
+                                                        o que pode forçar o reconhecimento a acontecer mais rápido."""
+            audio = recognizer.listen(source, timeout=4, phrase_time_limit=8)  # Adiciona timeout e tempo limite
             try:
                 stringEntrada = recognizer.recognize_google(audio, language='pt-BR')
                 stringEntrada = stringEntrada.upper()
