@@ -35,42 +35,39 @@ transcricao = ''
 while 'sair' not in transcricao:
     transcricao = ouvir_microfone()
 '''
-import warnings
 import speech_recognition as sr
+
 import whisper
-import tempfile
-import numpy as np
-import os
 
-warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead")
+import warnings
+warnings.filterwarnings("ignore")
 
-# Initialize the Whisper model
+def transcricao(arquivo):
+	result = model.transcribe(arquivo, language = 'Portuguese')
+	return result['text']
+
+# Inicializando o reconhecedor de áudio
+recognizer = sr.Recognizer()
+
+# Capturando áudio do microfone
+with sr.Microphone() as source:
+    print("Fale algo:")
+    audio = recognizer.listen(source, timeout=4, phrase_time_limit=8)  # Adiciona timeout e tempo limite
+
+    # Salvando o áudio em um arquivo temporário
+    with open("audio.wav", "wb") as f:
+        f.write(audio.get_wav_data())
+
+
+
+# Carregando o modelo Whisper
 model = whisper.load_model("base")
 
-def ouvir_microfone():
-    microfone = sr.Recognizer()
+'''
+# Transcrevendo o arquivo de áudio
+result = model.transcribe("audio.wav", language = 'Portuguese')
+'''
 
-    with sr.Microphone() as source:
-        microfone.adjust_for_ambient_noise(source)
-        print("Diga algo: ")
-        audio = microfone.listen(source)
-
-    # Save the audio data to a temporary WAV file
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio_file:
-        temp_audio_file.write(audio.get_wav_data())
-
-        # Transcribe using Whisper
-        print("Utilizando o Whisper:")
-        result = model.transcribe(temp_audio_file.name, language='portuguese')
-        transcricao = result['text'].strip()
-        print("Você disse: " + transcricao)
-        print("---------------------------------------")
-
-        # Clean up the temporary file
-        os.remove(temp_audio_file.name)
-
-    return transcricao
-
-transcricao = ''
-while 'sair' not in transcricao.lower():
-    transcricao = ouvir_microfone()
+# Exibindo o resultado
+#print("Transcrição:", result['text'])
+print("Transcrição:", transcricao("audio.wav"))
