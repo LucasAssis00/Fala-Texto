@@ -104,4 +104,4 @@ keytool -genkey -v -keystore meu-keystore.jks -alias meu-alias -keyalg RSA -keys
 jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore meu-keystore.jks meu-app.aab meu-alias
 jarsigner -verify meu-app.aab
 ```
-no comando keytool será requirido a criação de uma senha para a sua keystore, que vai assinar o aplicativo, e outras informações como o nome da sua organização.
+No comando keytool será requirido a criação de uma senha para a sua keystore, que vai assinar o aplicativo, e outras informações como o nome da sua organização.
