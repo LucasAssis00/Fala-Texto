@@ -81,12 +81,17 @@ buildozer -v android release
 
 No entanto, o arquivo gerado não conta com uma assinatura válida para a Play Store. Por isso, é necessário assiná-lo. Os comandos abaixo realizam esse processo para arquivos no formato .APK ou .AAB.
 
-- Para realizar a assinatura de um APK, utilize os comandos a seguir. Antes disso, é necessário instalar a ferramenta apksigner.
+- Para realizar a assinatura de um APK, utilize os comandos a seguir. Antes disso, é necessário instalar as ferramentas apksigner e zipalign.
 ```bash
-sudo apt install -y apksigner
+sudo apt install -y apksigner zipalign
 ```
 
-E por fim realize a assinatura, neste ponto será requirido a criação de uma senha para a sua keystore, que vai assinar o aplicativo, e outras informações como o nome da sua organização.
+Comando para otimizar um arquivo .APK (Opcional)
+```bash
+zipalign -v 4 meu-app.apk meu-app-alinhado.apk
+```
+
+E por fim realize a assinatura, no comando keytool será requirido a criação de uma senha para a sua keystore, que vai assinar o aplicativo, e outras informações como o nome da sua organização.
 ```bash
 keytool -genkey -v -keystore meu-keystore.jks -alias meu-alias -keyalg RSA -keysize 2048 -validity 20000
 apksigner sign --ks meu-keystore.jks --ks-key-alias meu-alias meu-app.apk
@@ -99,4 +104,4 @@ keytool -genkey -v -keystore meu-keystore.jks -alias meu-alias -keyalg RSA -keys
 jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore meu-keystore.jks meu-app.aab meu-alias
 jarsigner -verify meu-app.aab
 ```
-No comando keytool será requirido a criação de uma senha para a sua keystore, que vai assinar o aplicativo, e outras informações como o nome da sua organização.
+
