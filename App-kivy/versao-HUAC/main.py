@@ -83,8 +83,6 @@ Environment = autoclass('android.os.Environment')
 
 # whisper
 API_URL = "https://api-inference.huggingface.co/models/openai/whisper-medium"
-# headers = {"Authorization": "Bearer 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"}
-
 
 # pdf
 PDF_URL = "https://processarpdffalatex.zapto.org"
