@@ -103,25 +103,29 @@ import numpy as np
 import librosa
 import datetime
 
+# Gerando uma chave secreta aleatória para autenticação JWT
 secret_key = os.urandom(32)
 hash_senha = generate_password_hash("Transcrição_de_fala_em_texto_api")
 hash_senha2 = generate_password_hash("Transcrição_de_fala_api")
 
+# Inicializando o aplicativo Flask
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = secret_key
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=6)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=6) # Definindo o tempo de expiração do token JWT
 app.config['UPLOAD_FOLDER'] = 'uploads'  # Diretório 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-jwt = JWTManager(app)
-limiter = Limiter(app=app, key_func=get_remote_address)
 
+jwt = JWTManager(app) # Inicializando gerenciamento de autenticação JWT
+limiter = Limiter(app=app, key_func=get_remote_address) # Configurando o limitador de requisições
 
+# Dicionário de usuários com senhas hash
 usuarios = {
     'Fala-texto': hash_senha,
     'whisperadm': hash_senha2
 }
 
+# Carregando modelo de transcrição
 modelo = get_model()
 
 
@@ -209,10 +213,12 @@ def analyze_audio(audio_path):
 
 @app.route('/', methods=['GET'])
 def home():
+    """Rota inicial da API."""
     return jsonify({"message": "Bem-vindo à API!"})
 
 @app.route('/login', methods=['POST'])
 def login():
+    """Rota para autenticação do usuário."""
     username = request.json.get('username')
     password = request.json.get('password')
     # Verifique as credenciais do usuário aqui
@@ -222,7 +228,7 @@ def login():
     else:
         return jsonify({"msg": "Nome de usuário ou senha incorretos"}), 401
     
-
+"""Rota para listar os campos do documento"""
 @app.route('/listar-campos', methods=['POST'])
 @jwt_required()
 @limiter.limit("10 per minute")
@@ -240,7 +246,7 @@ def listar_campos():
     os.remove(file_path)
     return jsonify(campos)
 
-
+"""Rota para preencher o documento"""
 @app.route('/preencher-campos', methods=['POST'])
 @jwt_required()
 @limiter.limit("10 per minute")
@@ -271,7 +277,7 @@ def preencher_campos():
     os.remove(file_path)
     return send_file(resultado, as_attachment=True)
 
-
+"""Rota para realizar as transcrições"""
 @app.route('/transcricao', methods=['POST'])
 @jwt_required()
 @limiter.limit("10 per minute")
