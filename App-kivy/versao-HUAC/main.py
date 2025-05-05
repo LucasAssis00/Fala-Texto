@@ -1,3 +1,4 @@
+# Importações essenciais para a interface, processamento, acesso a APIs e funcionalidades Android
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -27,8 +28,7 @@ from android import activity
 from functools import partial
 from datetime import datetime
 
-
-# variaveis globais
+# Variáveis globais utilizadas para controlar o fluxo e armazenar os dados da aplicação
 marcadores = [
     'nome do paciente',
     'prontuário',
@@ -75,23 +75,25 @@ marcadores = [
     'responsável',
     'data']
 
-limiar = 0.01
-Dados_atualizados = {}
+limiar = 0.01 # Parâmetro para processamento de áudio (threshold)
+Dados_atualizados = {}  # Dicionário para armazenar os dados que serão inseridos no PDF
 
+# Importa classes do Android usando Pyjnius para gerenciar a gravação de áudio e acesso ao ambiente
 MediaRecorder = autoclass('android.media.MediaRecorder')
 AudioSource = autoclass('android.media.MediaRecorder$AudioSource')
 OutputFormat = autoclass('android.media.MediaRecorder$OutputFormat')
 AudioEncoder = autoclass('android.media.MediaRecorder$AudioEncoder')
 Environment = autoclass('android.os.Environment')
 
+# URLs para as APIs utilizadas
 # whisper
 API_URL = "https://api-inference.huggingface.co/models/openai/whisper-medium"
-
-
 # pdf
 PDF_URL = "https://processarpdffalatex.zapto.org"
 
-
+# -------------------------------------------------------------------
+# Classe para exibir o PDF em um ModalView (janela modal) com controle de zoom
+# -------------------------------------------------------------------
 class PDFModalView(ModalView):
     def __init__(self, pdf_path="", **kwargs):
         super().__init__(**kwargs)
@@ -105,6 +107,7 @@ class PDFModalView(ModalView):
         # Layout principal
         layout = FloatLayout(size=(1200,1200))
         
+        # Scatter permite interações como zoom e arrasto com a imagem
         scatter = Scatter(do_scale=True, do_rotation=False, do_translation=True,size_hint=(None, None), size=(800,1000),pos_hint={"center_x": 0.5, "center_y": 0.5})
 
         # Criar imagem centralizada
@@ -115,8 +118,7 @@ class PDFModalView(ModalView):
         scatter.add_widget(self.img)
         layout.add_widget(scatter)
 
-        # Criar botões de controle
-
+        # Botão para fechar o modal
         close_button = Button(text="Fechar", size_hint=(None, None), size=(120, 50),pos_hint={"center_x": 0.5, "center_y": 0.05})
         close_button.bind(on_press=self.dismiss)
 
@@ -125,6 +127,10 @@ class PDFModalView(ModalView):
 
     
     def arquivos_caminho(self, diretorio, arquivo):
+        """
+        Retorna o caminho completo para um arquivo dentro do diretório especificado.
+        Caso o diretório não exista, ele é criado.
+        """
         diretorio_atual = os.path.abspath(os.path.dirname(__file__))
         caminho_destino = os.path.join(diretorio_atual, diretorio)
         # Verificar se o diretório existe; se não, criá-lo
@@ -134,6 +140,10 @@ class PDFModalView(ModalView):
         return caminho_arquivo
     
     def salvar_arquivos(self, diretorio, arquivo):
+        """
+        Define o caminho e cria (se necessário) o diretório para salvar arquivos no armazenamento externo.
+        Utilizado para salvar arquivos (áudios, transcrições, PDFs, etc.) no dispositivo Android.
+        """
 
         # Caminho do armazenamento externo
         diretorio_externo = Environment.getExternalStoragePublicDirectory(
@@ -148,16 +158,22 @@ class PDFModalView(ModalView):
         return caminho_arquivo
     
 
-
+# -------------------------------------------------------------------
+# Classe principal da aplicação que gerencia a interface e a lógica de preenchimento
+# -------------------------------------------------------------------
 class Preencher(App):
     label = StringProperty(" ")
     label2 = StringProperty(" ")
-    prossegir = False
-    popup_aberto = False
-    conta = 0
-    fluxo = 0
+    prossegir = False  # Variável que indica se deve avançar o fluxo de preenchimento
+    popup_aberto = False  # Indica se um popup está sendo exibido
+    conta = 0    # Contador para diferenciar partes do preenchimento
+    fluxo = 0    # Índice atual para a lista de marcadores
 
     def inferencia_modelo(self, filename):
+        """
+        Realiza a inferência de áudio enviando o arquivo para a API 
+        e retorna a transcrição em formato JSON.
+        """
         with open(filename, "rb") as f:
             data = f.read()
         headers = {'Authorization': f'Bearer {self.access_token}'}
@@ -171,6 +187,10 @@ class Preencher(App):
         return response.json()
 
     def login(self):
+        """
+        Realiza o login na API de preenchimento usando credenciais pré-definidas.
+        Se bem-sucedido, armazena o token de acesso; caso contrário, exibe um erro.
+        """
         url = f"{PDF_URL}/login"
         payload = {'username': 'Fala-texto',
                    'password': 'Transcrição_de_fala_em_texto_api'}
@@ -185,6 +205,10 @@ class Preencher(App):
             # self.label = 'Falha no login'
 
     def salvar_arquivos(self, diretorio, arquivo):
+         """
+        Define o caminho para salvar arquivos no armazenamento externo (Android).
+        Similar ao método na classe PDFModalView, mas voltado para outros arquivos.
+        """
 
         # Caminho do armazenamento externo
         diretorio_externo = Environment.getExternalStoragePublicDirectory(
@@ -199,6 +223,11 @@ class Preencher(App):
         return caminho_arquivo
 
     def arquivos_caminho(self, diretorio, arquivo):
+        """
+        Retorna o caminho completo para um arquivo interno à aplicação,
+        criando o diretório se não existir.
+        """
+        
         diretorio_atual = os.path.abspath(os.path.dirname(__file__))
         caminho_destino = os.path.join(diretorio_atual, diretorio)
         # Verificar se o diretório existe; se não, criá-lo
@@ -208,12 +237,18 @@ class Preencher(App):
         return caminho_arquivo
 
     def build(self):
+        """
+        Constrói a interface gráfica principal:
+          - Define a cor de fundo da janela.
+          - Cria um layout vertical com imagem, labels, campos de texto e botões.
+          - Configura os botões para selecionar PDF, gravar áudio, preencher PDF e sair da aplicação.
+        """
         # (0.031, 0.247, 0.463, 1)
         Window.clearcolor = (0.776, 0.831, 0.882, 1)
 
         layout = BoxLayout(orientation='vertical', padding=10)
 
-        # Adicionar a imagem
+        # Adicionar a imagem principal da interface
         cami_imagem = self.arquivos_caminho('imagem', 'Imagem1.png')
         img = Image(
             source=cami_imagem, allow_stretch=True, size=(
@@ -228,8 +263,8 @@ class Preencher(App):
                 0, 0, 0, 1), size_hint=(
                 1, 0.1))
         layout.add_widget(texto_campos)
-
-        # Listbox usando ScrollView e GridLayout
+        
+        # Área com ScrollView para exibir dados e transcrições
         scrollview = ScrollView(size_hint=(1, 0.2))
         self.grid = GridLayout(cols=1, size_hint_y=None)
         self.grid.bind(minimum_height=self.grid.setter('height'))
@@ -256,6 +291,7 @@ class Preencher(App):
         # label_var = Label(text=self.label, font_size="17sp", color=(0, 0, 0, 1), size_hint=(1, 0.1))
         # self.bind(label=label_var.setter('text'))
 
+        # Campo de entrada para comandos e transcrições
         self.resposta = " "
         self.text_input2 = TextInput(
             text=self.resposta,
@@ -269,6 +305,7 @@ class Preencher(App):
         layout.add_widget(self.text_input2)
 
         # Botões
+        # Botão para selecionar um PDF do dispositivo
         self.importar = Button(
             text="Selecionar PDF", size_hint=(
                 None, 0.05), background_color=(
@@ -276,7 +313,8 @@ class Preencher(App):
                 340, 80), pos_hint={
                     'center_x': 0.5, 'center_y': 0.5}, on_press=self.abrir_pdf)
         layout.add_widget(self.importar)
-
+        
+        # Botão para iniciar a gravação de áudio
         self.botao1 = Button(
             text="Gravar audio", size_hint=(
                 None, 0.05), disabled=True, background_color=(
@@ -284,7 +322,8 @@ class Preencher(App):
                 340, 80), pos_hint={
                     'center_x': 0.5, 'center_y': 0.5}, on_press=self.thread_calibra)
         layout.add_widget(self.botao1)
-
+        
+        # Botão para preencher o PDF com os dados coletados
         self.bt_abrir = Button(
             text="Preencher PDF", size_hint=(
                 None, 0.05), disabled=True, background_color=(
@@ -292,7 +331,8 @@ class Preencher(App):
                 340, 80), pos_hint={
                     'center_x': 0.5, 'center_y': 0.5}, on_press=self.thread_preencher)
         layout.add_widget(self.bt_abrir)
-
+        
+        # Botão para encerrar a aplicação
         self.bt_sair = Button(
             text="Encerrar Aplicação", size_hint=(
                 None, 0.05), background_color=(
@@ -300,7 +340,8 @@ class Preencher(App):
                 340, 80), pos_hint={
                     'center_x': 0.5, 'center_y': 0.5}, on_press=self.stop_app)
         layout.add_widget(self.bt_sair)
-
+        
+        # Solicita permissões no Android para acesso à memória e microfone
         request_permissions([Permission.WRITE_EXTERNAL_STORAGE,
                              Permission.READ_EXTERNAL_STORAGE,
                              Permission.RECORD_AUDIO])
@@ -308,17 +349,26 @@ class Preencher(App):
         return layout
 
     def on_start(self):
+        """
+        Método chamado ao iniciar a aplicação.
+        Define o título da janela e executa o login na API.
+        """
         self.title = "Preenchimento de PDF's"
         self.login()
 
     def Mostrar_pdf(self):
+        """
+        Abre o PDF importado em um modal para visualização.
+        """
         x = PDFModalView()
         x.open()
     
     def show_warning(self, frase):
+         """
+        Exibe um popup com aviso e uma mensagem.
+        """
         content = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        # Criar um contêiner de rolagem para evitar que o texto sobreponha os
-        # botões
+       
         scroll_view = ScrollView(size_hint=(1, 0.7), size=(500, 100))
 
         label = Label(text=frase, size_hint_y=None, height=35,
@@ -339,10 +389,11 @@ class Preencher(App):
         popup2.open()
 
     def show_warning3(self, frase):
+        """
+        Exibe um popup com aviso (e opção de 'Sim') para confirmar continuidade.
+        """
         content = BoxLayout(orientation='vertical', padding=10, spacing=10)
 
-        # Criar um contêiner de rolagem para evitar que o texto sobreponha os
-        # botões
         scroll_view = ScrollView(size_hint=(1, 0.7), size=(500, 100))
 
         text_input = TextInput(text=frase, readonly=True)
@@ -361,14 +412,16 @@ class Preencher(App):
         # Adiciona ScrollView em vez da Label diretamente
         content.add_widget(scroll_view)
         content.add_widget(button)
-        # content.add_widget(button2)
         self.popup_aberto = True
         button.bind(on_release=self.Sim)
-        # button2.bind(on_release=partial(self.verifica_nao, p))
-        self.conta = self.conta + 1
+        self.conta = self.conta + 1  # Incrementa o contador de etapas
         self.popup.open()
 
     def verifica(self, m, *args):
+        """
+        Verifica o texto digitado e atualiza os dados do campo especificado.
+        Remove pontuação inicial se existir e limpa o campo de entrada.
+        """
         global Dados_atualizados
         texto_salvo = self.text_input2.text
         if texto_salvo != self.resposta:
@@ -382,23 +435,30 @@ class Preencher(App):
         self.text_input2.text = ''
         self.popup_aberto = False
 
-    def verifica_nao(self, j, *args):
-        global Dados_atualizados
-        Dados_atualizados[j] = None
-        self.popup.dismiss()
-        self.popup_aberto = False
 
     def atualizar_texto(self, dt):
+        """
+        Atualiza o campo de entrada com o comando transcrito.
+        """
         self.resposta = self.comando
         self.text_input2.text = self.resposta
 
     def on_text_change(self, instance, value):
+         """
+        Mantém o texto digitado convertido em minúsculas para padronização.
+        """
         self.x = value.lower()
 
     def imprimir_erro(self, erro):
+        """
+        Exibe uma mensagem no campo de entrada.
+        """
         self.text_input2.text = erro
 
     def Sim(self, *args):
+        """
+        Registra a confirmação do usuário, anotando o tempo e avançando o fluxo.
+        """
         global Dados_atualizados
         agora = datetime.now()
         tempo = agora.strftime("%H:%M:%S")
@@ -413,14 +473,20 @@ class Preencher(App):
         self.popup.dismiss()
 
     def thread_calibra(self, instance):
+        """
+        Inicia uma thread para o processo de gravação e interpretação de áudio, evitando bloquear a interface.
+        """
         # Função de calibração do microfone
         # dados = self.listar_campos_pdf(self.documento)
         threading.Thread(target=self.processo, args=(
             self.dados,), daemon=True).start()
 
     def habilitar_calibra(self):
+        """
+        Configura o MediaRecorder para gravar áudio, envia o arquivo para a API de transcrição,
+        atualiza a interface com o comando transcrito e salva a transcrição em arquivo.
+        """
         global limiar
-
         try:
             self.label2 = 'Fale algo:'
 
@@ -439,7 +505,8 @@ class Preencher(App):
                 self.recorder.stop()
                 self.recorder.release()
                 self.recorder = None
-
+            
+            # Realiza a inferência do áudio e atualiza o comando com o texto recebido
             voz = self.inferencia_modelo(audio2)
             if 'text' in voz:
                 self.comando = voz['text']
@@ -456,6 +523,11 @@ class Preencher(App):
                 f"Erro ao gravar áudio: {e}"), 0.05)
 
     def processo(self, dados):
+        """
+        Gerencia o fluxo principal de captura e processamento dos dados para preenchimento do PDF.
+        Inclui a gravação conforme o campo definido, análise do comando do usuário,
+        e atualização do dicionário de dados preenchidos.
+        """
         global marcadores
         global Dados_atualizados
 
@@ -494,6 +566,8 @@ class Preencher(App):
         if i == 'você deseja continuar para a proxima etapa ?':
             Clock.schedule_once(lambda dt: self.show_warning3(i), 0.1)
         Clock.schedule_once(lambda dt: self.exibir_dicionario(i), 0.1)
+        
+        # Define a duração da gravação conforme o campo
         if i in self.filtro or i in [
             'identidade',
             'sítio cirúrgico',
@@ -537,6 +611,8 @@ class Preencher(App):
                     elif 'não' in self.comando.lower():
                         self.comando = 'não'
                         self.prossegir = True
+                
+                # Atualiza os dados do campo detectados a partir do PDF
                 for campo in dados.keys():
                     if campo[0].lower() in self.comando.lower():
 
@@ -557,14 +633,7 @@ class Preencher(App):
                                 lambda dt: self.verifica(auxiliar), 0.1)
                             # self.prossegir = True
                             # self.popup_aberto = False
-                            '''
-                                if self.x != self.comando:
-                                    valor2 = self.x.lower().split(campo)[-1].strip()
-                                    if len(valor2) != 0:
-                                        if bool(re.search(r'[^\\w\\s]', valor2[0])): # verifica se tem pontuação no inicio da string
-                                            valor2 = valor2[1:].strip()
-                                    Dados_atualizados[campo] = valor2
-                                '''
+                           
                         elif campo[1] == 5:
                             Dados_atualizados[campo] = 1
                             # self.prossegir = True
@@ -595,6 +664,10 @@ class Preencher(App):
             self.botao1.disabled = True
 
     def abrir_pdf(self, instance):
+        """
+        Abre a tela de seleção de arquivos do Android para escolher um PDF.
+        Utiliza Intent para filtrar somente arquivos PDF.
+        """
         Intent = autoclass('android.content.Intent')
         PythonActivity = autoclass('org.kivy.android.PythonActivity').mActivity
         intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -604,6 +677,11 @@ class Preencher(App):
         activity.bind(on_activity_result=self.on_activity_result)
 
     def on_activity_result(self, request_code, result_code, intent):
+        """
+        Processa o arquivo PDF selecionado:
+          - Lê o conteúdo binário do PDF.
+          - Atualiza a interface e lista os campos do PDF via API.
+        """
 
         if request_code == 1 and result_code == autoclass(
                 'android.app.Activity').RESULT_OK:
@@ -632,6 +710,10 @@ class Preencher(App):
             self.botao1.disabled = False
 
     def thread_preencher(self, instance):
+        """
+        Inicia uma thread para enviar os dados coletados à API e gerar o PDF preenchido.
+        Após a conclusão, exibe um aviso e reseta o fluxo de preenchimento.
+        """
         global Dados_atualizados
         novo = dict(Dados_atualizados)
         download_path = self.salvar_arquivos("Formularios", 'Preenchido3.pdf')
@@ -655,6 +737,10 @@ class Preencher(App):
         self.bt_abrir.disabled = True
 
     def exibir_dicionario(self, chave):
+        """
+        Organiza e exibe o texto correspondente ao campo atual a ser preenchido.
+        Ajusta a mensagem de acordo com o tipo de campo.
+        """
         # Adicione os itens do dicionário na Listbox
         # for chave, valor in dados.items():
         if chave in [
@@ -705,11 +791,19 @@ class Preencher(App):
         # self.grid.add_widget(lbl)
 
     def clear_text(self):
+        """
+        Limpa o texto exibido na área de transcrições.
+        """
         # self.grid.clear_widgets()
         self.oracao = ''
         self.text_input3.text = self.oracao
 
     def preencher_campos_pdf(self, pdf_path, output_path, data):
+        """
+        Envia o PDF e os dados preenchidos para a API de preenchimento.
+        Se a resposta for bem-sucedida (status 200), o PDF preenchido é salvo no caminho especificado;
+        caso contrário, exibe a mensagem de erro.
+        """
         dados = {}
         url = f"{PDF_URL}/preencher-campos"
         headers = {'Authorization': f'Bearer {self.access_token}'}
@@ -733,6 +827,10 @@ class Preencher(App):
             self.label2 = f'Erro: {response.status_code} - {response.json()}'
 
     def listar_campos_pdf(self, pdf_path):
+        """
+        Envia o PDF para a API que lista os campos disponíveis para preenchimento.
+        Retorna um dicionário com o nome e o tipo de cada campo.
+        """
         saida = {}
         headers = {'Authorization': f'Bearer {self.access_token}'}
         url = f"{PDF_URL}/listar-campos"
@@ -753,9 +851,11 @@ class Preencher(App):
         return saida
 
     def stop_app(self, instance):
-        # Método que encerra a aplicação
+        """
+        Encerra a aplicação.
+        """
         self.stop()
 
-
+# Instancia e executa a aplicação
 relatorio = Preencher()
 relatorio.run()
