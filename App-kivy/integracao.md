@@ -40,7 +40,22 @@ val request = Request.Builder()
     .build()
 
 val response = client.newCall(request).execute()
-val campos = gson.fromJson(response.body?.string(), Map::class.java)
+val json = response.body?.string()
+
+val typeToken = object : TypeToken<MutableMap<String, Any?>>() {}.type
+val campos: MutableMap<String, Any?> = gson.fromJson(json, typeToken)
+val camposConvertidos: MutableMap<Pair<String, Int>, Any?> = mutableMapOf()
+
+for ((chaveComposta, valor) in campos) {
+    val partes = chaveComposta.split("|")
+    if (partes.size == 2) {
+        val nomeCampo = partes[0]
+        val tipoCampo = partes[1].toIntOrNull()
+        if (tipoCampo != null) {
+            camposConvertidos[Pair(nomeCampo, tipoCampo)] = valor
+        }
+    }
+}
 ```
 
 ---
