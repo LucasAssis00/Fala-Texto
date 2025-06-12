@@ -481,7 +481,7 @@ class Preencher(App):
         threading.Thread(target=self.processo, args=(
             self.dados,), daemon=True).start()
 
-    def habilitar_calibra(self):
+    def gravacao(self):
         """
         Configura o MediaRecorder para gravar áudio, envia o arquivo para a API de transcrição,
         atualiza a interface com o comando transcrito e salva a transcrição em arquivo.
@@ -589,7 +589,7 @@ class Preencher(App):
                 Clock.schedule_once(lambda dt: self.imprimir_erro(''), 0.05)
                 break
             if not self.popup_aberto:
-                self.habilitar_calibra()
+                self.gravacao()
 
                 if i in self.filtro:
                     if 'sim' in self.comando.lower() or 'não' in self.comando.lower(
@@ -638,7 +638,7 @@ class Preencher(App):
                             Dados_atualizados[campo] = 1
                             # self.prossegir = True
                             # self.popup_aberto = False
-                            time.sleep(0.3)
+                            time.sleep(1.3)
                             Clock.schedule_once(
                                 lambda dt: self.verifica(campo), 0.1)
 
@@ -646,7 +646,7 @@ class Preencher(App):
                             Dados_atualizados[campo] = True
                             # self.prossegir = True
                             # self.popup_aberto = False
-                            time.sleep(0.3)
+                            time.sleep(1.3)
                             Clock.schedule_once(
                                 lambda dt: self.verifica(campo), 0.1)
 
