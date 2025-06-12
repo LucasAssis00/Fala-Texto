@@ -50,13 +50,19 @@ val campos = gson.fromJson(response.body?.string(), Map::class.java)
 **PDF + campos no formato multipart/form-data**
 
 ```kotlin
+import java.io.File
+
 val file = File("documento.pdf")
-val formBody = MultipartBody.Builder().setType(MultipartBody.FORM)
-    .addFormDataPart("file", file.name, file.asRequestBody("application/pdf".toMediaType()))
-    .addFormDataPart("NomeCompleto|7", "João da Silva")   // texto
-    .addFormDataPart("Idade|5", "28")                     // inteiro
-    .addFormDataPart("Aceita|2", "true")                  // booleano
-    .build()
+val formBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
+formBodyBuilder.addFormDataPart("file", file.name, file.asRequestBody("application/pdf".toMediaType()))
+
+// Adicionar os campos com chaves no formato chave|tipo
+for ((chave, valor) in dados) {
+    val nomeCampo = "${chave.first}|${chave.second}"
+    formBodyBuilder.addFormDataPart(nomeCampo, valor.toString())
+}
+
+val formBody = formBodyBuilder.build()
 
 val request = Request.Builder()
     .url("http://<seu_host>:5000/preencher-campos")
@@ -64,10 +70,27 @@ val request = Request.Builder()
     .post(formBody)
     .build()
 
+import java.util.UUID
+
 val response = client.newCall(request).execute()
-val pdfBytes = response.body?.bytes()
-// Salvar o PDF retornado:
-File("preenchido.pdf").writeBytes(pdfBytes!!)
+if (response.isSuccessful) {
+    val pdfBytes = response.body?.bytes()
+    // Salvar o PDF retornado:
+    val nomeArquivo = "preenchido_${UUID.randomUUID()}.pdf"
+    // Caminho para a pasta "Formulários" dentro de Downloads
+    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    val pastaFormulario = File(downloadsDir, "Formulários")
+    // Cria a pasta se não existir
+    if (!pastaFormulario.exists()) {
+        pastaFormulario.mkdirs()
+    }
+    // Cria o arquivo dentro da pasta
+    val arquivoDestino = File(pastaFormulario, nomeArquivo)
+    arquivoDestino.writeBytes(pdfBytes!!)
+} else {
+    println("Algo deu errado: código ${response.code}")
+}
+
 ```
 
 ---
