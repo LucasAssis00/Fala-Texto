@@ -31,6 +31,7 @@ from datetime import datetime
 # Variáveis globais utilizadas para controlar o fluxo e armazenar os dados da aplicação
 marcadores = [
     'nome do paciente',
+    'data de nascimento',
     'prontuário',
     'sala',
     'identidade',
@@ -61,10 +62,13 @@ marcadores = [
     'confirmação do procedimento',
     'contagem de compressas',
     'contagem de compressas entregues',
+    'contagem de compressas conferidas',
     'contagem de instrumentos',
     'contagem de instrumentos entregues',
+    'contagem de instrumentos conferidos',
     'contagem de agulhas',
     'contagem de agulhas entregues',
+    'contagem de agulhas conferidas',
     'amostra cirúrgica identificada',
     'requisição completa',
     'problema com equipamentos',
@@ -611,6 +615,7 @@ class Preencher(App):
                     elif 'não' in self.comando.lower():
                         self.comando = 'não'
                         self.prossegir = True
+                        time.sleep(0.8)
                 
                 # Atualiza os dados do campo detectados a partir do PDF
                 for campo in dados.keys():
@@ -638,7 +643,7 @@ class Preencher(App):
                             Dados_atualizados[campo] = 1
                             # self.prossegir = True
                             # self.popup_aberto = False
-                            time.sleep(1.3)
+                            time.sleep(1.2)
                             Clock.schedule_once(
                                 lambda dt: self.verifica(campo), 0.1)
 
@@ -646,19 +651,21 @@ class Preencher(App):
                             Dados_atualizados[campo] = True
                             # self.prossegir = True
                             # self.popup_aberto = False
-                            time.sleep(1.3)
+                            time.sleep(1.2)
                             Clock.schedule_once(
                                 lambda dt: self.verifica(campo), 0.1)
 
                 self.label2 = ' '
                 time.sleep(0.14)
             if 'próximo item' in self.comando.lower():
+                time.sleep(0.8)
                 Clock.schedule_once(lambda dt: self.clear_text(), 0.05)
                 # self.label = " "
                 Clock.schedule_once(lambda dt: self.imprimir_erro(''), 0.05)
                 self.fluxo = self.fluxo + 1
                 break
         self.botao1.disabled = False
+        self.bt_sair.disabled = True
         if i == 'data':
             self.bt_abrir.disabled = False
             self.botao1.disabled = True
@@ -735,6 +742,7 @@ class Preencher(App):
         Dados_atualizados.clear()
         self.importar.disabled = False
         self.bt_abrir.disabled = True
+        self.bt_sair.disabled = False
 
     def exibir_dicionario(self, chave):
         """
@@ -767,6 +775,9 @@ class Preencher(App):
             texto_novo = f"{chave}  (x)"
             self.oracao = texto_novo
 
+        elif chave == 'qual':
+            texto_novo = f"Reação alérgica: {chave}  ..."
+            self.oracao = texto_novo
         elif chave in ['identidade', 'sítio cirúrgico', 'marcar procedimento', 'consentimento']:
             if chave == 'marcar procedimento':
                 texto_novo = f"Paciente Confirmou: {chave[7:]}  (x)"
