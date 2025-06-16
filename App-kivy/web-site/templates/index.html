@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Captura de Imagem • API Flask</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #f5f5f5;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #1f1f1f;
+      width: 100%;
+      text-align: center;
+      padding: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    main {
+      padding: 1.5rem;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    video {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    button {
+      padding: 0.7rem 1.2rem;
+      margin: 0.3rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+
+    #status {
+      font-weight: bold;
+      color: #8bd4ff;
+    }
+
+    pre {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      padding: 1rem;
+      width: 100%;
+      max-height: 200px;
+      overflow-x: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 5px solid #333;
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: none;
+      margin: 1rem auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📸 Captura de Imagem</h1>
+  </header>
+
+  <main>
+    <video id="video" autoplay playsinline></video>
+
+    <div>
+      <button onclick="capturePhoto()">📷 Capturar</button>
+      <button onclick="sendPhoto()" disabled id="sendBtn">📤 Enviar</button>
+    </div>
+
+    <div class="spinner" id="spinner"></div>
+
+    <canvas id="canvas" width="300" height="225" style="display:none;"></canvas>
+
+    <p id="status">Aguardando login automático...</p>
+    <pre id="responseBox"></pre>
+  </main>
+
+  <script>
+    let token = "";
+    let imageBlob;
+
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const sendBtn = document.getElementById("sendBtn");
+    const statusText = document.getElementById("status");
+    const spinner = document.getElementById("spinner");
+
+    // Iniciar câmera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; })
+      .catch(() => {
+        statusText.textContent = "⚠️ Erro ao acessar a webcam.";
+      });
+
+    // Login automático
+    async function loginAutomatizado() {
+      const payload = {
+        username: "Fala-texto",
+        password: "Transcrição_de_fala_em_texto_api"
+      };
+
+      try {
+        const response = await fetch("http://localhost:5000/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          token = data.access_token;
+          statusText.textContent = "✅ Login realizado com sucesso!";
+        } else {
+          statusText.textContent = "❌ Falha no login.";
+        }
+      } catch {
+        statusText.textContent = "⚠️ Erro ao se conectar à API.";
+      }
+    }
+
+    function capturePhoto() {
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        imageBlob = blob;
+        sendBtn.disabled = false;
+        statusText.textContent = "📸 Imagem capturada!";
+      }, "image/jpeg");
+    }
+
+    async function sendPhoto() {
+      if (!token || !imageBlob) {
+        statusText.textContent = "⚠️ Token ou imagem ausente.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", imageBlob, "captura.jpg");
+
+      spinner.style.display = "block";
+      statusText.textContent = "Enviando imagem...";
+
+      try {
+        const response = await fetch("http://localhost:5000/upload-imagem", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token
+          },
+          body: formData
+        });
+
+        const result = await response.json();
+        document.getElementById("responseBox").textContent = JSON.stringify(result, null, 2);
+        statusText.textContent = "✅ Imagem enviada com sucesso!";
+        imageBlob = null;
+        sendBtn.disabled = true
+      } catch {
+        statusText.textContent = "❌ Erro ao enviar imagem.";
+      } finally {
+        spinner.style.display = "none";
+      }
+    }
+
+    // Inicia login ao carregar
+    window.onload = () => {
+      loginAutomatizado();
+    };
+  </script>
+</body>
+</html>
