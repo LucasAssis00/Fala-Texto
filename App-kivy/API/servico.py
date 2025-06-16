@@ -294,7 +294,7 @@ def transcricao():
 
     snr_value = calculate_snr_speech(file_path)
     rms, pitch, spectral_centroid = analyze_audio(file_path)
-    if snr_value > 12 and pitch > 100 and rms >= 0.0085:
+    if snr_value > 12 and pitch > 100 and rms >= 0.008:
         texto = transcricao_pdf(file_path)
     else:
         texto = {'text':'Audio de baixa qualidade,Tente novamente'}
@@ -303,5 +303,5 @@ def transcricao():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
 
