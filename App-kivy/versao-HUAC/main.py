@@ -581,7 +581,9 @@ class Preencher(App):
                 'material anestésico disponível']:
             self.duracao = 3
         elif i in ['requisição completa', 'comunicado à enfermeira', 'comentário do cirurgião', 'comentário da anestesista', 'comentário da enfermagem']:
-            self.duracao = 10
+            self.duracao = 15
+        elif i == 'você deseja continuar para a proxima etapa ?':
+            self.duracao = 2
         else:
             self.duracao = 7
         while True:
@@ -633,7 +635,7 @@ class Preencher(App):
                                         valor[0])):  # verifica se tem pontuação no inicio da string
                                     valor = valor[1:].strip()
                             Dados_atualizados[campo] = valor
-                            time.sleep(8)
+                            time.sleep(10)
                             Clock.schedule_once(
                                 lambda dt: self.verifica(auxiliar), 0.1)
                             # self.prossegir = True
@@ -758,8 +760,6 @@ class Preencher(App):
             'acesso venoso adequado',
             'histórico de reação alérgica',
             'antibiótico profilático',
-            'revisão do cirurgião',
-            'revisão do anestesista',
             'correta esterilização',
             'placa de eletrocautério',
             'equipamentos disponíveis',
@@ -774,7 +774,15 @@ class Preencher(App):
                 'material anestésico disponível', 'reserva de sangue disponível']:
             texto_novo = f"{chave}  (x)"
             self.oracao = texto_novo
+                    
+        elif chave == 'revisão do cirurgião':
+            texto_novo = f"{chave}. Há momentos críticos mencionados ?  (x)"
+            self.oracao = texto_novo
 
+        elif chave == 'revisão do anestesista':
+            texto_novo = f"{chave}. Há preocupações mencionadas ?  (x)"
+            self.oracao = texto_novo
+            
         elif chave == 'qual':
             texto_novo = f"Reação alérgica: {chave}  ..."
             self.oracao = texto_novo
