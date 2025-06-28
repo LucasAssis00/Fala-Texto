@@ -6,3 +6,5 @@ PyMuPDF
 openai-whisper
 numpy
 librosa
+deepface
+facenet-pytorch
