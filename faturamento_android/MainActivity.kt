@@ -8,7 +8,9 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.widget.Button
+import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnFuzz: Button
     private lateinit var btnFalar: Button
     private lateinit var btnNovoTermo: Button
+    private lateinit var btnRelatorio: Button
     private lateinit var inputTexto: TextView  // Agora é TextView
     private lateinit var resultadoTexto: TextView
     private lateinit var textoSorteado: TextView
@@ -38,27 +41,37 @@ class MainActivity : AppCompatActivity() {
         resultadoTexto = findViewById(R.id.fuzzShowing)
         textoSorteado = findViewById(R.id.data)
         btnNovoTermo = findViewById((R.id.btnAlterna))
+        btnRelatorio = findViewById(R.id.btnrelatorio)
+
+        //mostrar a variavel como 'global'
+        var tabela_final = mutableMapOf<String, String>()
+        //var results: List<Pair<String, Int>> = emptyList()
+        var results: List<Pair<Pair<String, String>, Int>> = emptyList()
 
         solicitarPermissoes()
 
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
         configurarReconhecimento()
 
-        val descricoes = mutableListOf<String>()
+        val descricoes = mutableListOf<Pair<String, String>>()
 
         // Lê o arquivo CSV
-        assets.open("tabela_consulta3.csv").bufferedReader().useLines { lines ->
-            lines.forEach { line ->
-                val row = line.split(",")
+        assets.open("tabela_consulta2.csv").bufferedReader().useLines { lines ->
+            lines.drop(1).forEach { line -> // .drop(1) para ignorar o cabeçalho "Descricao,Valor"
+                val row = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)".toRegex()) // regex que respeita aspas
                 if (row.size >= 2) {
-                    descricoes.add(row[0].replace("\"", "").trim())
+                    val descricao = row[0].replace("\"", "").trim()
+                    val valor = row[1].replace("\"", "").trim()
+                    descricoes.add(descricao to valor)
                 }
             }
         }
 
         // Sorteia um item
         if (descricoes.isNotEmpty()) {
-            itemSorteado = descricoes[Random.nextInt(descricoes.size)]
+            val item = descricoes[Random.nextInt(descricoes.size)]
+            itemSorteado = item.first
+            //itemSorteado = descricoes[Random.nextInt(descricoes.size)]
             textoSorteado.text = itemSorteado
         } else {
             textoSorteado.text = "Nenhuma descrição encontrada."
@@ -66,24 +79,99 @@ class MainActivity : AppCompatActivity() {
 
         // Ação do botão de similaridade
         btnFuzz.setOnClickListener {
+
             val entrada = inputTexto.text.toString()
+            if (entrada.isBlank()) {
+                textoSorteado.text = "Digite algo para comparar"
+            }
+            else {
+                results = descricoes.map { it to (levenshteinSimilarity(entrada, it.first) * 100).toInt() }
+                    .sortedByDescending { it.second }
+                    .take(3) // top 3 mais parecidos
+
+                val resultText = results.joinToString("\n\n") { (item, score) -> "${item.first}: $score%" }
+
+                //textoSorteado.text = "Mais semelhantes:\n$resultText"
+                resultadoTexto.text = "Mais semelhantes:\n$resultText"
+                //resultadoTexto.text = "Mais semelhantes:\n${results[1].first}"
+            }
+            /*
             val resultado = levenshteinSimilarity(entrada, itemSorteado) * 100
             resultadoTexto.text = "Similaridade: ${resultado.toInt()}%"
             if(resultado.toInt() > 90){
                 itemSorteado = descricoes[Random.nextInt(descricoes.size)]
                 textoSorteado.text = itemSorteado
             }
+             */
         }
 
         btnFalar.setOnClickListener {
             iniciarReconhecimentoVoz()
         }
+        btnRelatorio.setOnClickListener {
+            resultadoTexto.text = "Formulário:\n" + tabela_final.entries.joinToString("\n" ){ "*${it.key} - R$${it.value}" }
+            //resultadoTexto.text = "Formulário:\n$tabela_final"
+            //resultadoTexto.text = "Mais semelhantes:\n$resultText"
+        }
 
 
+        btnNovoTermo.setOnClickListener { view ->
+            val popupMenu = PopupMenu(this@MainActivity, view)
+            popupMenu.inflate(R.menu.popup_menu_item)
+
+            fun processarSelecao(index: Int) {
+                if (index in results.indices) {
+                    val selecionado = results[index]
+                    val descricao = selecionado.first.first
+                    val valor = selecionado.first.second
+                    val score = selecionado.second
+
+                    Toast.makeText(this@MainActivity, selecionado.first.toString(), Toast.LENGTH_LONG).show()
+                    //tabela_final.put(descricao, score.toString())
+                    tabela_final.put(descricao, valor)
+                    val novoItem = descricoes.random()
+                    itemSorteado = novoItem.first
+                    textoSorteado.text = "${novoItem.first}"
+                    //textoSorteado.text = "${novoItem.first} - R$ ${novoItem.second}"
+                    inputTexto.setText("Fala reconhecida aparecerá aqui")
+                    resultadoTexto.text = ""
+                    //textoSorteado.text = itemSorteado
+                    //inputTexto.text = "Fala reconhecida aparecerá aqui"
+                    //resultadoTexto.text = ""
+                }
+            }
+
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when(menuItem.itemId){
+                    R.id.item1 ->{
+                        processarSelecao(0)
+                        true
+                    }
+
+                    R.id.item2 ->{
+                        processarSelecao(1)
+                        true
+                    }
+
+                    R.id.item3 ->{
+                        processarSelecao(2)
+                        true
+                    }
+
+                    else ->{
+                        false
+                    }
+                }
+            }
+            popupMenu.show()
+        }
+        /*
         btnNovoTermo.setOnClickListener {
             itemSorteado = descricoes[Random.nextInt(descricoes.size)]
-            textoSorteado.text = itemSorteado
+            textoSorteado.text = ""
+            //textoSorteado.text = itemSorteado
         }
+        */
     }
 
     private fun solicitarPermissoes() {
