@@ -45,13 +45,23 @@
         android:id="@+id/btnAlterna"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Novo termo"
+        android:text="Escolher item"
         android:layout_marginBottom="-110dp"
         app:layout_constraintBottom_toBottomOf="@id/input_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintVertical_bias="0.5"
         app:layout_constraintHorizontal_bias="0.5"  />
+
+    <Button
+        android:id="@+id/btnrelatorio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Relatório"
+        android:layout_marginBottom="150dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btnGrava"
