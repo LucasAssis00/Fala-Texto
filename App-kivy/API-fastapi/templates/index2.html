@@ -196,6 +196,7 @@
   </main>
 
   <script>
+    const API_BASE_URL = "https://192.168.1.5:5000";
     // Elementos de login
     const loginForm    = document.getElementById("loginForm");
     const loginStatus  = document.getElementById("loginStatus");
@@ -215,7 +216,7 @@
       };
 
       try {
-        const resp = await fetch("https://192.168.1.5:5000/login", {
+        const resp = await fetch("${API_BASE_URL}/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -276,7 +277,7 @@
       statusEl.textContent = "Enviando imagem...";
 
       try {
-        const resp = await fetch("https://192.168.1.5:5000/upload-imagem", {
+        const resp = await fetch("${API_BASE_URL}/upload-imagem", {
           method: "POST",
           headers: { Authorization: "Bearer " + token },
           body: formData
@@ -341,7 +342,7 @@
       sendAudioBtn.disabled = true;
 
       try {
-        const resp = await fetch("https://192.168.1.5:5000/transcricao", {
+        const resp = await fetch("${API_BASE_URL}/transcricao", {
           method: "POST",
           headers: { Authorization: "Bearer " + token },
           body: formData
