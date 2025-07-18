@@ -665,14 +665,17 @@ class Preencher(App):
                 self.gravacao()
 
                 if i in self.filtro:
-                    if (
+
+                    if "não se aplica" in self.comando.lower():
+                        self.comando = "não se aplica" + " " + i
+                        
+                    elif (
                         "sim" in self.comando.lower()
                         or "não" in self.comando.lower()
                         or "providenciado" in self.comando.lower()
                     ):
                         self.comando = i + " " + self.comando.lower().strip()
-                    elif "não se aplica" in self.comando.lower():
-                        self.comando = self.comando.lower().strip() + " " + i
+                   
 
                 if i in [
                     "identidade",
@@ -721,7 +724,7 @@ class Preencher(App):
                             Clock.schedule_once(lambda dt: self.verifica(campo), 0.1)
 
                 self.label2 = " "
-                time.sleep(0.12)
+                time.sleep(0.14)
             if "próximo item" in self.comando.lower():
                 # time.sleep(1)
                 Clock.schedule_once(lambda dt: self.clear_text(), 1)
