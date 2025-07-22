@@ -283,7 +283,7 @@ async def transcricao(request: Request,
         buf.write(await file.read())
     snr_value = calculate_snr_speech(fp)
     rms, pitch, spectral_centroid = analyze_audio(fp)
-    if snr_value > 12 and pitch > 100 and rms >= 0.008:
+    if snr_value > 12 and pitch > 100 and rms >= 0.007:
         texto = transcricao_pdf(fp)
     else:
         texto = {"text": "audio ruim"}
