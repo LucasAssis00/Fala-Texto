@@ -733,8 +733,10 @@ class Preencher(App):
                 self.fluxo = self.fluxo + 1
                 break
         self.botao1.disabled = False
-        self.bt_abrir.disabled = False
         self.bt_sair.disabled = True
+        if i == 'data':
+            self.bt_abrir.disabled = False
+            self.botao1.disabled = True
 
     def abrir_pdf(self, instance):
         Intent = autoclass("android.content.Intent")
