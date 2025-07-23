@@ -4,6 +4,9 @@ PyMuPDF
 openai-whisper
 numpy
 librosa
+soundfile
+noisereduce
+pydub
 fastapi-jwt-auth 
 slowapi 
 passlib 
