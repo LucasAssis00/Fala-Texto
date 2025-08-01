@@ -216,7 +216,7 @@
       };
 
       try {
-        const resp = await fetch("${API_BASE_URL}/login", {
+        const resp = await fetch(`${API_BASE_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -277,7 +277,7 @@
       statusEl.textContent = "Enviando imagem...";
 
       try {
-        const resp = await fetch("${API_BASE_URL}/upload-imagem", {
+        const resp = await fetch(`${API_BASE_URL}/upload-imagem`, {
           method: "POST",
           headers: { Authorization: "Bearer " + token },
           body: formData
@@ -342,7 +342,7 @@
       sendAudioBtn.disabled = true;
 
       try {
-        const resp = await fetch("${API_BASE_URL}/transcricao", {
+        const resp = await fetch(`${API_BASE_URL}/transcricao`, {
           method: "POST",
           headers: { Authorization: "Bearer " + token },
           body: formData
