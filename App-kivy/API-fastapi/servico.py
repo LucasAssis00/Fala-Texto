@@ -354,9 +354,9 @@ async def upload_imagem(request: Request,
         os.remove(fp)
         raise HTTPException(400, "Imagem sem face, não foi salva.")
 
-@app.post("/preencher-campos")
+@app.post("/preencher-pdf")
 @limiter.limit("15/minute")
-async def preencher_campos(
+async def preencher_pdf(
     request: Request,background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
     Authorize: AuthJWT = Depends(),
@@ -575,6 +575,7 @@ async def preencher_campos(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
