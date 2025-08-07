@@ -33,7 +33,11 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from passlib.context import CryptContext
 from werkzeug.utils import secure_filename
+from fastapi.middleware.cors import CORSMiddleware
 
+origins = [
+    "https://processarcadastro.cyberedu.com.br",  # substitua pelo domínio real
+]
 
 # 1) CONFIGURAÇÕES DE JWT
 class JWTSettings(BaseModel):
@@ -48,6 +52,13 @@ def get_jwt_settings() -> JWTSettings:
 # 2) INICIALIZANDO O APP & RATE-LIMITER
 app = FastAPI(title="API FastAPI: PDF, Áudio e Face",docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 templates = Jinja2Templates(directory="templates")
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
@@ -577,6 +588,7 @@ async def preencher_pdf(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
