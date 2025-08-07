@@ -21,6 +21,7 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
@@ -46,6 +47,7 @@ def get_jwt_settings() -> JWTSettings:
 
 # 2) INICIALIZANDO O APP & RATE-LIMITER
 app = FastAPI(title="API FastAPI: PDF, Áudio e Face",docs_url=None, redoc_url=None, openapi_url=None)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
@@ -575,6 +577,7 @@ async def preencher_pdf(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
