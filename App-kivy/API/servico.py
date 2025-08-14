@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2025 Lapsi-Fala-texto
+
 
 # manipulação de PDFs, processamento de áudio e outras utilidades.
 
@@ -424,3 +427,4 @@ def upload_imagem():
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
+
