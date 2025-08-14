@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2025 Lapsi/Fala-texto
+
+# Importações das ferramentas
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -919,3 +923,4 @@ class Preencher(App):
 
 relatorio = Preencher()
 relatorio.run()
+
