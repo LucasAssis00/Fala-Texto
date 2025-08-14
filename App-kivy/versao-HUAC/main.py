@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2025 Lapsi/Fala-texto
+
 # Importações essenciais para a interface, processamento, acesso a APIs e funcionalidades Android
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -878,3 +881,4 @@ class Preencher(App):
 # Instancia e executa a aplicação
 relatorio = Preencher()
 relatorio.run()
+
