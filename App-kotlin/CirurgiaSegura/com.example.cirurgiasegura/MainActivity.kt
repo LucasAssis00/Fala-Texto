@@ -1,4 +1,4 @@
-package com.example.uploadcirurgiasegura
+package com.example.uploadcirurgiasegura2
 
 import android.Manifest
 import android.app.AlertDialog
@@ -41,6 +41,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.File
 import java.io.FileOutputStream
@@ -140,6 +141,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var file: File //Pro bagui do csv
 
+    private lateinit var jwtToken: String
+
     private val pdfPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             processarPdfSelecionado(uri)
@@ -147,6 +150,10 @@ class MainActivity : AppCompatActivity() {
             textView.text = "Nenhum arquivo selecionado"
         }
     }
+
+    data class LoginResponse(
+        val access_token: String
+    )
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -197,6 +204,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(applicationContext, R.string.toast_msg)
         }
          */
+        fazerLogin {
+            // Código a ser executado após login bem-sucedido
+            textView.text = "Login feito com sucesso!"
+        }
 
 
     }
@@ -261,6 +272,9 @@ class MainActivity : AppCompatActivity() {
         val btnNext = findViewById<Button>(R.id.btn_next)
         if (currentIndex == questions.size - 1) {
             btnNext.text = "Finalizar"
+        }
+        else {
+            btnNext.text = "Próxima"
         }
     }
     private fun saveCurrentAnswer() {
@@ -402,7 +416,14 @@ class MainActivity : AppCompatActivity() {
         val api = retrofit.create(ApiService::class.java)
         val parts = listOf(csvPart, pdfPart)
 
-        api.uploadArquivos(parts).enqueue(object : Callback<ResponseBody> {
+
+        //Parou
+        val linhas = csvFile.readLines()
+        val tabela = linhas.map { it.split(",") }
+        val item11 = tabela.getOrNull(1)?.getOrNull(1)
+        val nomeDoSujeito = item11?.replace(Regex("[^A-Za-z0-9]"), "")
+
+        api.uploadArquivos(jwtToken, parts).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     response.body()?.let { body ->
@@ -412,7 +433,7 @@ class MainActivity : AppCompatActivity() {
                             if (!pdfDir.exists()) {
                                 pdfDir.mkdirs()
                             }
-                            val outputFile = File(pdfDir, "preenchido_${System.currentTimeMillis()}.pdf")
+                            val outputFile = File(pdfDir, "preenchido - ${nomeDoSujeito}.pdf")
                             val inputStream = body.byteStream()
                             val outputStream = FileOutputStream(outputFile)
 
@@ -816,6 +837,44 @@ class MainActivity : AppCompatActivity() {
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
     }
+    private fun fazerLogin(onSuccess: () -> Unit) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://processarpdffalatex.zapto.org")
+            .addConverterFactory(GsonConverterFactory.create()) // Usa Scalar pois não estamos usando Gson
+            .build()
+
+        val api = retrofit.create(ApiService::class.java)
+
+        val loginData = HashMap<String, String>()
+        loginData["username"] = "Fala-texto"
+        loginData["password"] = "Transcrição_de_fala_em_texto_api"
+
+        api.login(loginData).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    try {
+                        val token = response.body()?.access_token
+                        if (token != null) {
+                            jwtToken = "Bearer $token"
+                            textView.text = "Login automático realizado"
+                            onSuccess()
+                        } else {
+                            textView.text = "Token não encontrado na resposta"
+                        }
+                    } catch (e: java.lang.Exception) {
+                        textView.text = "Erro ao interpretar token: ${e.message}"
+                    }
+                } else {
+                    textView.text = "Erro no login: ${response.code()}"
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                textView.text = "Falha na conexão: ${t.message}"
+            }
+        })
+    }
+
     private fun iniciarReconhecimentoVoz() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
