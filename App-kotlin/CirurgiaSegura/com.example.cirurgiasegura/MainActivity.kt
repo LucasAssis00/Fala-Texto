@@ -394,7 +394,7 @@ class MainActivity : AppCompatActivity() {
         val pdfPart = MultipartBody.Part.createFormData("files", pdfFile.name, pdfRequest)
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://150.165.37.191:5000/") // IP Máquina servidor
+            .baseUrl("http://IP_usuario:porta_hospedada/") // IP Máquina servidor
             .addConverterFactory(ScalarsConverterFactory.create())
 
             .build()
