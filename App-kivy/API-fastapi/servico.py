@@ -1,4 +1,7 @@
-# main.py
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2025 Lapsi/Fala-texto
+
+# imports 
 import os
 import uuid
 import glob
@@ -588,6 +591,7 @@ async def preencher_pdf(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
