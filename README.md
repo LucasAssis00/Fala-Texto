@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 # Fala-Texto
 
 <div align="center">
@@ -104,4 +106,3 @@ keytool -genkey -v -keystore meu-keystore.jks -alias meu-alias -keyalg RSA -keys
 jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore meu-keystore.jks meu-app.aab meu-alias
 jarsigner -verify meu-app.aab
 ```
-
