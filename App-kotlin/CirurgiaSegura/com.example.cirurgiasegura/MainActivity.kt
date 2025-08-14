@@ -394,7 +394,7 @@ class MainActivity : AppCompatActivity() {
         val pdfPart = MultipartBody.Part.createFormData("files", pdfFile.name, pdfRequest)
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://IP_usuario:porta_hospedada/") // IP Máquina servidor
+            .baseUrl("https://processarpdffalatex.zapto.org") // IP Máquina servidor
             .addConverterFactory(ScalarsConverterFactory.create())
 
             .build()
