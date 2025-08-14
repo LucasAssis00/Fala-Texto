@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.uploadcirurgiasegura"
+    namespace = "com.example.uploadcirurgiasegura2"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.uploadcirurgiasegura"
+        applicationId = "com.example.uploadcirurgiasegura2"
         minSdk = 30
         targetSdk = 35
         versionCode = 1
