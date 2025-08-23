@@ -9,7 +9,7 @@ O projeto Conversão Fala-Texto apresenta uma tecnologia promissora para o recon
 
 ## Desenvolvimento do app android baseado no Kivy
 
-O desenvolvimento de aplicativos Android no contexto da saúde apresenta uma oportunidade valiosa para transformar a maneira como serviços médicos e informações são acessados e gerenciados. Pensando nisso, o app traz para o contidiano do ambiente hospitalar acessibilidade, inovação tecnológica e eficiência no preenchimento de documentos.
+O desenvolvimento de aplicativos Android no contexto da saúde apresenta uma oportunidade valiosa para transformar a maneira como serviços médicos e informações são acessados e gerenciados. Pensando nisso, o app traz para o cotidiano do ambiente hospitalar acessibilidade, inovação tecnológica e eficiência no preenchimento de documentos.
 
 ### Pré-requisitos:
 - Ambiente linux para o desenvolvimento do apk
