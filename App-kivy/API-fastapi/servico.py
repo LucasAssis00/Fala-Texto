@@ -571,7 +571,7 @@ async def preencher_pdf(
                 form[chave] = v
             elif c == 'Recomendações Enfermagem:' and n_campo[0] == 'comentário da enfermagem':
                 form[chave] = v
-            elif n_campo[0] in c.lower():
+            elif n_campo[0] in c.lower() and n_campo[0] != 'data':
                 form[chave] = v
 
     data: Dict[str, Any] = {}
@@ -591,6 +591,7 @@ async def preencher_pdf(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
