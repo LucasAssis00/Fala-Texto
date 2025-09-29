@@ -1,4 +1,4 @@
-package com.example.uploadcirurgiasegura2
+package ufcg.example.voicesurgery
 
 import android.Manifest
 import android.app.AlertDialog
@@ -33,6 +33,7 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.voicesurgery.R
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -59,7 +60,7 @@ class CheckboxQuestion(
     title: String,
     val options: List<String>
 ) : Question(title)
-//class SalvaTempo(title: String) : Question(title)
+class SalvaTempo(title: String) : Question(title)
 
 data class QuestionAnswer(
     val question: String,
@@ -73,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnNext: Button
     private lateinit var btnFalar: Button
     private lateinit var btnToast: Button
+    private lateinit var btnHowTo: Button
 
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var currentQuestionView: View
@@ -91,7 +93,8 @@ class MainActivity : AppCompatActivity() {
         TextInputQuestion("Data de Nascimento:"),
         TextInputQuestion("Prontuário:"),
         TextInputQuestion("Sala:"),
-        //SalvaTempo(""),
+        SalvaTempo("Antes da Indução Anestésica"),
+
         CheckboxQuestion("Paciente confirmou:", listOf("Identidade", "Sítio Cirúrgico correto", "Procedimento", "Consentimento")),
         MultipleChoiceQuestion("Sítio demarcado (lateralidade):", listOf("Sim", "Não", "Não se aplica")),
         CheckboxQuestion("Verificação da segurança anestésica:", listOf("Montagem da SO de acordo com o procedimento", "Material anestésico disponível, revisados e funcionantes")),
@@ -101,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         CheckboxQuestion("Acesso venoso adequado e pérvio:", listOf("Sim", "Não", "Providenciado na SO")),
         MultipleChoiceQuestion("Histórico de reação alérgica:", listOf("Sim", "Não")),
         TextInputQuestion("Qual?:"),
+        SalvaTempo("Antes da Incisão Cirúrgica"),
 
         MultipleChoiceQuestion("Apresentação oral de cada membro da equipe pelo nome e função:", listOf("Sim", "Não")),
         MultipleChoiceQuestion("Cirurgião, o anestesista e equipe de enfermagem confirmam verbalmente: Nome do paciente, sítio cirúrgico e procedimento a ser realizado.", listOf("Sim", "Não")),
@@ -111,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         MultipleChoiceQuestion("Revisão da enfermagem. Placa de eletrocautério posicionada:", listOf("Sim", "Não")),
         MultipleChoiceQuestion("Revisão da enfermagem. Equipamentos disponíveis e funcionantes:", listOf("Sim", "Não")),
         MultipleChoiceQuestion("Revisão da enfermagem. Insumos e instrumentais disponíveis:", listOf("Sim", "Não")),
+        SalvaTempo("Antes da Saída do Paciente da Sala de Cirurgia"),
 
         MultipleChoiceQuestion("Confirmação do procedimento realizado.", listOf("Sim", "Não")),
         MultipleChoiceQuestion("Contagem de compressas.", listOf("Sim", "Não", "Não se aplica")),
@@ -164,11 +169,15 @@ class MainActivity : AppCompatActivity() {
         container = findViewById(R.id.question_container)
         btnNext = findViewById(R.id.btn_next)
         btnFalar = findViewById(R.id.btnFalar)
+        btnHowTo = findViewById(R.id.btnHowto)
         //btnToast = findViewById(R.id.btn_toast)
 
         showCurrentQuestion()
 
+        mostraInstrucoes()
+
         btnNext.setOnClickListener {
+            textView.text = ""//Dá certo isso?
             saveCurrentAnswer()
 
             if (currentIndex < questions.size - 1) {
@@ -199,6 +208,9 @@ class MainActivity : AppCompatActivity() {
         btnFalar.setOnClickListener {
             iniciarReconhecimentoVoz()
         }
+        btnHowTo.setOnClickListener {
+            mostraInstrucoes()
+        }
         /*
         btnToast.setOnClickListener {
             Toast.makeText(applicationContext, R.string.toast_msg)
@@ -221,6 +233,7 @@ class MainActivity : AppCompatActivity() {
             is TextInputQuestion -> R.layout.question_text_input
             is MultipleChoiceQuestion -> R.layout.question_multiple_choice
             is CheckboxQuestion -> R.layout.question_checkbox // <- este aqui!
+            is SalvaTempo -> R.layout.pontos_pausa
             else -> throw IllegalArgumentException("Tipo desconhecido de pergunta")
         }
 
@@ -307,6 +320,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 selected.joinToString("; ") // <-- isso vira a resposta
             }
+            is SalvaTempo -> {
+                //val input = view.findViewById<EditText>(R.id.input_answer)
+                val input = LocalTime.now().truncatedTo(ChronoUnit.SECONDS).toString()
+                input
+            }
         }
 
         answers[currentIndex] = response
@@ -342,7 +360,17 @@ class MainActivity : AppCompatActivity() {
 
             writer.println("Pergunta,Resposta")
             for ((index, question) in questions.withIndex()) {
-                val pergunta = question.title
+
+                var pergunta = question.title
+                if(pergunta == "Antes da Indução Anestésica"){
+                    pergunta = "parte 1"
+                }
+                else if(pergunta == "Antes da Incisão Cirúrgica"){
+                    pergunta = "parte 2"
+                }
+                else if(pergunta == "Antes da Saída do Paciente da Sala de Cirurgia"){
+                    pergunta = "parte 3"
+                }
                 val resposta = answers[index] ?: ""
                 writer.println("\"$pergunta\",\"$resposta\"")
             }
@@ -473,6 +501,13 @@ class MainActivity : AppCompatActivity() {
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 textView.text = "Fale agora..."
+
+                textView.postDelayed({
+                    // Only update if still showing "Processando..."
+                    if (textView.text == "Fale agora...") {
+                        textView.text = "Por favor, tente novamente"
+                    }
+                }, 6000) // 6000 ms = 6 seconds
             }
 
             override fun onBeginningOfSpeech() {
@@ -508,6 +543,13 @@ class MainActivity : AppCompatActivity() {
 
             override fun onEndOfSpeech() {
                 textView.text = "Processando..."
+
+                textView.postDelayed({
+                    // Only update if still showing "Processando..."
+                    if (textView.text == "Processando...") {
+                        textView.text = "Por favor, tente novamente"
+                    }
+                }, 3000) // 3000 ms = 3 seconds
             }
 
             override fun onResults(results: Bundle?) {
@@ -520,8 +562,10 @@ class MainActivity : AppCompatActivity() {
                     var textoCapturado = palavras.joinToString(" ")
                     textView.text = "Você disse: $textoCapturado"
 
-                    if (textoCapturado.contains("avançar", ignoreCase = true)){
-                        textoCapturado = ""
+                    //Gambiarra - as vezes capta 'avançado' ao invés de 'avançar'
+                    if (textoCapturado.contains("avança", ignoreCase = true)){
+                        //textView.text = ""//Dá certo isso?
+                        //textoCapturado = ""
                         btnNext.performClick()
                     }
                     else {
@@ -879,6 +923,11 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
+
+            // Mais tolerância ao silêncio
+            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 5000) // Aumentar o tempo de silêncio inicial (tempo que ele espera até você começar a falar)
+
+
             speechRecognizer.startListening(intent)
         }
         speechRecognizer.startListening(intent)
@@ -917,6 +966,27 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            is SalvaTempo -> {
+                val input = LocalTime.now().truncatedTo(ChronoUnit.SECONDS).toString()
+                input
+            }
         }
+    }
+    private fun mostraInstrucoes() {
+        val alert = AlertDialog.Builder(this)
+            .setTitle("Como Utilizar o aplicativo")
+            .setMessage("Aperte o botão 'Falar' e pronuncie a informação referente ao campo mostrado na parte superior da tela.\n" +
+                    "Caso necessário, utilize o teclado virtual para eventuais correções ou marcações para campos objetivos")
+            .setPositiveButton("Fechar") { _, _ ->
+                /*salvarRespostasEmCSV()
+                currentIndex = 0
+                answers.clear() // se quiser limpar as respostas, opcional
+                showCurrentQuestion()*/
+                //colocar o migué do enviar arquivo por aqui (no caso foi na função 'salvarrespostas')
+            }
+            //.setNegativeButton("Não enviar agora", null)
+            .create()
+
+        alert.show()
     }
 }
