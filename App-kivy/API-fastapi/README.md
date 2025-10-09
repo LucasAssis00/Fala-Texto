@@ -64,11 +64,11 @@ sudo systemctl restart docker
 Agora é hora de executar o container que irá disponibilizar o serviço de preenchimento. Antes disso, baixe os arquivos da pasta API-fastapi desse repositório e certifique-se de que o diretório do projeto esteja com a seguinte estrutura:
 
 /meu_projeto
- ├── static/
- ├── templates/
- ├── Dockerfile
- ├── requirements.txt
- └── servico.py
+
+<div align="center">
+  <img width="586" height="261" alt="Captura de tela 2025-10-09 105818" src="https://github.com/user-attachments/assets/d445cb10-5b8d-4184-9239-08067d91b0e3" />
+</div>
+
 
 No diretório do projeto execute o comando abaixo para contruir a imagem Docker:
 ```bash
@@ -101,5 +101,4 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-Assim, ao final desses passos, o serviço esta funcionando normalmente e o App cliente já pode estabelecer requisições.
-
+Assim, o serviço esta funcionando normalmente ao final desses passos e o App cliente já pode estabelecer requisições.
