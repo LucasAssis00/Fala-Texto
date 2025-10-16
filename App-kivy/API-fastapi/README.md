@@ -93,6 +93,7 @@ sudo ufw status
 Agora, mova o arquivo 'Processo', que contém toda a configuração necessária para o Nginx expor o serviço para o domínio público, para esse diretório: 
 ```bash
 sudo mv endereço-de-origem/Processo /etc/nginx/sites-available/Processo
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 ```
 
 Consolidando essas configurações:
