@@ -3,7 +3,7 @@
 # Fala-Texto
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/1d1e4d24-db10-4e1a-8598-04288cc1a91a" alt="Imagem1">
+  <img width="350" height="2000" src="https://github.com/user-attachments/assets/1d1e4d24-db10-4e1a-8598-04288cc1a91a" alt="Imagem1">
 </div>
 Este documento instrui como implementar o serviço de preenchimento de formulários em um servidor Ubuntu v20.04+ com Gpu NVIDIA e seus drivers. 
 
