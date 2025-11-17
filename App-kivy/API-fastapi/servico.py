@@ -112,6 +112,7 @@ def listar_campos_pdf(pdf_path: str) -> Dict[str, Optional[str]]:
             for w in doc.load_page(i).widgets() or []:
                 key = f"{w.field_name}|{w.field_type}"
                 campos[key] = None
+        doc.close()
         return campos
     except Exception as e:
         return {"error": str(e)}
@@ -120,11 +121,25 @@ def preencher_campos_pdf(pdf_path: str, output_path: str, data: Dict[str, Any]) 
     try:
         doc = fitz.open(pdf_path)
         for i in range(doc.page_count):
+            page = doc.load_page(i)
             for w in doc.load_page(i).widgets() or []:
                 if w.field_name in data:
-                    w.field_value = data[w.field_name]
-                    w.update()
-        doc.save(output_path)
+                    if w.field_name in ("parte 1","parte 2","parte 3"):
+                        r = w.rect  # fitz.Rect com coordenadas do widget
+                        padding = 1  # margem
+                        box = fitz.Rect(r.x0 + padding, r.y0 + padding, r.x1 - padding, r.y1 - padding)
+                        # inserir por coordenada (baseline)
+                        try:
+                            page.insert_text((box.x0, box.y0 + 12), data[w.field_name],
+                                     fontname="helv", fontsize=12, color=(0, 0, 0))
+                        except Exception as e:
+                            print("insert_text falhou:", e)            
+                        page.delete_widget(w)
+                    else:    
+                        w.field_value = data[w.field_name]
+                        w.update()
+        doc.save(output_path, garbage=4, deflate=True)
+        doc.close()
         return output_path
     except Exception as e:
         return {"error": str(e)}
@@ -591,6 +606,7 @@ async def preencher_pdf(
     return FileResponse(path=out_fp, filename=os.path.basename(out_fp),
                         media_type="application/pdf",
                         background=background_tasks) 
+
 
 
 
